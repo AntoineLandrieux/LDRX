@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>FIB</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            font-family: sans-serif;
+            color: #fff;
+        }
+
+        body {
+            background-color: #111;
+        }
+
+        .ldrx-error {
+            color: #bd0f0f;
+        }
+    </style>
+    <script src="../src/ldrx.js"></script>
+</head>
+
+<body>
+    <img src="../resources/icon/ldrx.svg" width="200">
+    <br />
+    <ldrx-run style="font-family: monospace;">
+\ write Fibonacci series up to n
+fn fib(integer n) {
+    \ Print a Fibonacci series up to n.
+    integer a 0;
+    integer b 1;
+
+    while a < n {
+        print a + " ";
+        integer a b;
+        integer b a + b;
+    }
+    
+    return a;
+}
+
+\ Now call the function we just defined:
+print "The lasted value is " + fib(2000);
+    </ldrx-run>
+</body>
+
+</html>
