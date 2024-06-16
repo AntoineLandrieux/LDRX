@@ -9,7 +9,7 @@
  * Antoine LANDRIEUX
  * <https://github.com/AntoineLandrieux/LDRX/>
  * 
- * Do What The Fuck You Want to Public License
+ * MIT License
  
 **/
 

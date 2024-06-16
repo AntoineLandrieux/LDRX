@@ -3,7 +3,7 @@
 
 ![LDRX](resources/icon/ldrx.svg)
 
-LDRX is distributed under the [WTFPL](LICENSE).
+LDRX is distributed under the [MIT LICENSE](LICENSE).
 
 ---
 
