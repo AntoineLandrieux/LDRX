@@ -28,7 +28,7 @@ Download LDRX: [ldrx.min.js](https://raw.githubusercontent.com/AntoineLandrieux/
     ...
     <ldrx-run>
         \\ Code
-        output "<p>This website use LDRX.</p>"
+        print "<p>This website use LDRX.</p>"
     </ldrx-run>
 </body>
 </html>
