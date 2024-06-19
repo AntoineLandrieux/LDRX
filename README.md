@@ -15,12 +15,14 @@ See [LDRX Documentation](doc/documentation.md)
 
 ### Add LDRX code into HTML page
 
+Download LDRX: [ldrx.min.js](https://raw.githubusercontent.com/AntoineLandrieux/LDRX/main/src/min/ldrx.min.js)
+
 ```html
 <!DOCTYPE html>
 <html>
 <head>
     ...
-    <script src="https://raw.githubusercontent.com/AntoineLandrieux/LDRX/main/src/min/ldrx.min.js">
+    <script src="ldrx.min.js">
 </head>
 <body>
     ...

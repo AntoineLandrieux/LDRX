@@ -10,7 +10,7 @@
 
 ### 1.1 Install LDRX
 
-Add LDRX interpreter into HTML page using `ldrx.min.js` file:
+Add the LDRX interpreter to the HTML page with the file to download (`ldrx.min.js`):
 <https://raw.githubusercontent.com/AntoineLandrieux/LDRX/main/src/min/ldrx.min.js>
 
 ```html
@@ -18,7 +18,7 @@ Add LDRX interpreter into HTML page using `ldrx.min.js` file:
 <html>
 <head>
     ...
-    <script src="https://raw.githubusercontent.com/AntoineLandrieux/LDRX/main/src/min/ldrx.min.js">
+    <script src="ldrx.min.js">
 </head>
 <body>
     ...
@@ -35,7 +35,7 @@ To insert LDRX code into an html page, we will use the `<ldrx-run>` tag.
 <html>
 <head>
     ...
-    <script src="https://raw.githubusercontent.com/AntoineLandrieux/LDRX/main/src/min/ldrx.min.js">
+    <script src="ldrx.min.js">
 </head>
 <body>
     <ldrx-run>
