@@ -67,13 +67,13 @@ class LDRX extends HTMLElement {
     };
 
     MEMORY = [
-        { name: "LDRX", value: "LDRX (WTFPL) Antoine LANDRIEUX v1.0.0", arg: null, access: null },
+        { name: "LDRX", value: "LDRX (MIT) Antoine LANDRIEUX v1.0.0", arg: null, access: null },
         { name: "DATE", value: new Date().toDateString(), arg: null, access: null },
         { name: "TIME", value: Number(new Date()), arg: null, access: null }
     ];
 
     /**
-     * LDRX (WTFPL) Antoine LANDRIEUX
+     * LDRX (MIT) Antoine LANDRIEUX
      */
     constructor() {
         super();
