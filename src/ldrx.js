@@ -21,13 +21,14 @@ class LDRX extends HTMLElement {
     TOKEN_EOF = 0xa00;
     TOKEN_NAME = 0xa01;
     TOKEN_TYPE = 0xa02;
-    TOKEN_STRING = 0xa03;
-    TOKEN_NUMBER = 0xa04;
-    TOKEN_KEYWORD = 0xa05;
-    TOKEN_OPERATOR = 0xa06;
-    TOKEN_SEMICOLON = 0xa07;
-    TOKEN_OPEN = 0xa08;
-    TOKEN_CLOSE = 0xa09;
+    TOKEN_OPEN = 0xa03;
+    TOKEN_CLOSE = 0xa04;
+    TOKEN_COMMA = 0xa05;
+    TOKEN_STRING = 0xa06;
+    TOKEN_NUMBER = 0xa07;
+    TOKEN_KEYWORD = 0xa08;
+    TOKEN_OPERATOR = 0xa09;
+    TOKEN_SEMICOLON = 0xa0a;
 
     NODE_ROOT = 0xb00;
     NODE_BODY = 0xb01;
@@ -46,6 +47,7 @@ class LDRX extends HTMLElement {
     NODE_REMOVE = 0xb0e;
     NODE_FUNCTION = 0xb0f;
     NODE_OPERATOR = 0xb10;
+    NODE_PASS = 0xb11;
 
     ERROR_INTERPRETER = 0x01;
     ERROR_CHARACTER = 0x02;
@@ -165,7 +167,7 @@ class LDRX extends HTMLElement {
         return new this.AbstractSyntaxTree(_Value, _Type, null, []);
     }
 
-    TYPEs = ["string", "integer", "float", "void", "$"];
+    TYPEs = ["string", "integer", "float", "void", "any", "$"];
     KEYWORDs = ["fn", "return", "print", "while", "if", "else", "rem", "ask"];
     OPERATORs = ["<=", ">=", "==", "!=", "&&", "||", "**", "*", "/", "%", "^", "+", "-", "&", "|", "<", ">"];
 
@@ -201,6 +203,9 @@ class LDRX extends HTMLElement {
 
             if (_RawCode[index] == ";")
                 ttype = this.TOKEN_SEMICOLON;
+
+            else if (_RawCode[index] == ',')
+                ttype = this.TOKEN_COMMA;
 
             else if (_RawCode[index] == "$")
                 ttype = this.TOKEN_TYPE;
@@ -288,12 +293,18 @@ class LDRX extends HTMLElement {
             let arg = instance_.AST("arg", instance_.NODE_ARGVAR);
             CurrentToken++;
 
-            while (_Tokens[CurrentToken].type != instance_.TOKEN_CLOSE) {
+            while (1) {
                 let argv = ParseMath();
                 if (!argv)
                     return null;
                 arg.Push(argv);
+                if (_Tokens[CurrentToken].type != instance_.TOKEN_COMMA)
+                    break;
+                CurrentToken++;
             }
+
+            if (_Tokens[CurrentToken].type != instance_.TOKEN_CLOSE)
+                return null;
 
             fn.Push(arg);
             CurrentToken++;
@@ -369,6 +380,7 @@ class LDRX extends HTMLElement {
                 break;
 
             else if (_Tokens[CurrentToken].type == this.TOKEN_SEMICOLON) {
+                CurrentAST.Push(this.AST("pass", this.NODE_PASS));
                 CurrentToken++;
                 continue;
             }
@@ -428,17 +440,26 @@ class LDRX extends HTMLElement {
                             CurrentToken++;
                             let arg = this.AST("arg", this.NODE_ARGVAR);
 
-                            while (_Tokens[CurrentToken].type != this.TOKEN_CLOSE) {
+                            while (true) {
                                 if (_Tokens[CurrentToken].type != this.TOKEN_TYPE)
                                     return this.ThrowLang(this.ERROR_SYNTAX, _Tokens[CurrentToken].value, _Tokens[CurrentToken].char);
+
                                 let arg_type = this.AST(_Tokens[CurrentToken].value, this.NODE_TYPE);
                                 CurrentToken++;
 
                                 if (_Tokens[CurrentToken].type != this.TOKEN_NAME)
                                     return this.ThrowLang(this.ERROR_SYNTAX, _Tokens[CurrentToken].value, _Tokens[CurrentToken].char);
+
                                 arg.Push(this.AST(_Tokens[CurrentToken].value, this.NODE_STORE).Push(arg_type));
                                 CurrentToken++;
+
+                                if (_Tokens[CurrentToken].type != this.TOKEN_COMMA)
+                                    break;
+                                CurrentToken++;
                             }
+
+                            if (_Tokens[CurrentToken].type != this.TOKEN_CLOSE)
+                                return this.ThrowLang(this.ERROR_SYNTAX, _Tokens[CurrentToken].value, _Tokens[CurrentToken].char);
 
                             fn.Push(arg);
                             CurrentAST.Push(fn);
@@ -496,7 +517,7 @@ class LDRX extends HTMLElement {
                     break;
 
                 default:
-                    return this.ThrowLang(this.ERROR_SYNTAX, keyword, _Tokens[CurrentToken].char);
+                    return this.ThrowLang(this.ERROR_SYNTAX, _Tokens[CurrentToken].value, _Tokens[CurrentToken].char);
             }
         }
 
@@ -556,6 +577,7 @@ class LDRX extends HTMLElement {
             case "string":
                 return _Value.toString();
             case "$":
+            case "any":
                 return _Value;
             default:
                 return this.SYMBOL_NULL;
@@ -590,7 +612,7 @@ class LDRX extends HTMLElement {
 
         this.MEMORY[get]?.arg?._Children?.forEach(argname => {
             this.#mem_add(argname._Value, this.format(argname._Children[0]._Value, this.ParseAST(arg._Children[0]).value), null, fn);
-            arg._Children[0]._Children.shift();
+            arg._Children.shift();
         });
 
         return this.Execute(fn);
@@ -627,20 +649,9 @@ class LDRX extends HTMLElement {
         if (!_AST)
             return;
 
-        /**
-         * @param {AbstractSyntaxTree} _AST 
-         */
-        const Next = (_AST, _CC) => {
-            let next = _AST?._Parent;
-            return next?._Children[_CC];
-        };
-
-        /**
-         * @type {AbstractSyntaxTree}
-         */
         let current = _AST._Children[0];
-        let cc = 0;
         let tmp = null;
+        let c = 1;
 
         while (current) {
 
@@ -710,10 +721,9 @@ class LDRX extends HTMLElement {
                     break;
             }
 
-            cc++;
+            current = current._Parent._Children[c];
             tmp = null;
-            current = Next(current, cc);
-
+            c++;
         }
 
         return null;

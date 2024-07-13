@@ -28,13 +28,13 @@
     <br />
     <ldrx-run style="font-family: monospace;">
 \ write Fibonacci series up to n
-fn fib(integer n) {
+fn fib(integer n, any end) {
     \ Print a Fibonacci series up to n.
     integer a 0;
     integer b 1;
 
     while a < n {
-        print a + " ";
+        print a + end;
         integer a b;
         integer b a + b;
     }
@@ -43,7 +43,8 @@ fn fib(integer n) {
 }
 
 \ Now call the function we just defined:
-print "The lasted value is " + fib(2000);
+print "The first value is ";
+print "The last value is " + fib(2000, "<br/>");
     </ldrx-run>
 </body>
 

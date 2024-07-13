@@ -96,7 +96,8 @@ integer number 1;
 float floating 1.58;
 
 \ any type
-$ any "Hy";
+any anytype1 "Hy";
+$   anytype2 8;
 
 \ statement
 string message {
@@ -107,7 +108,7 @@ string message {
     }
 };
 
-fn add(float x float y) {
+fn add(float x, float y) {
     return x + y;
 }
 
