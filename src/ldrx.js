@@ -609,10 +609,11 @@ class LDRX extends HTMLElement {
             return null;
 
         const fn = this.MEMORY[get].value;
+        let i = 0;
 
         this.MEMORY[get]?.arg?._Children?.forEach(argname => {
-            this.#mem_add(argname._Value, this.format(argname._Children[0]._Value, this.ParseAST(arg._Children[0]).value), null, fn);
-            arg._Children.shift();
+            this.#mem_add(argname._Value, this.format(argname._Children[0]._Value, this.ParseAST(arg._Children[i]).value), null, fn);
+            i = i + 1;
         });
 
         return this.Execute(fn);
