@@ -15,43 +15,44 @@
 
 class LDRX extends HTMLElement {
 
+    VERSION = {MAJOR: 1, MINOR: 0, PATCH: 0};
+
     SYMBOL_NULL = "Null";
     SYMBOL_NOTDEF = "Undefined";
 
     TOKEN_EOF = 0xa00;
     TOKEN_NAME = 0xa01;
-    TOKEN_TYPE = 0xa02;
-    TOKEN_OPEN = 0xa03;
-    TOKEN_CLOSE = 0xa04;
-    TOKEN_COMMA = 0xa05;
-    TOKEN_STRING = 0xa06;
-    TOKEN_NUMBER = 0xa07;
+    TOKEN_OPEN = 0xa02;
+    TOKEN_CLOSE = 0xa03;
+    TOKEN_COMMA = 0xa04;
+    TOKEN_STRING = 0xa05;
+    TOKEN_NUMBER = 0xa06;
+    TOKEN_ASSIGN = 0xa07;
     TOKEN_KEYWORD = 0xa08;
     TOKEN_OPERATOR = 0xa09;
     TOKEN_SEMICOLON = 0xa0a;
 
     NODE_ROOT = 0xb00;
     NODE_BODY = 0xb01;
-    NODE_TYPE = 0xb02;
-    NODE_CALL = 0xb03;
-    NODE_IF = 0xb04;
-    NODE_GET = 0xb05;
-    NODE_WHILE = 0xb06;
-    NODE_STORE = 0xb07;
-    NODE_ARGVAR = 0xb08;
-    NODE_STRING = 0xb09;
-    NODE_NUMBER = 0xb0a;
-    NODE_RETURN = 0xb0b;
-    NODE_OUTPUT = 0xb0c;
-    NODE_PROMPT = 0xb0d;
-    NODE_REMOVE = 0xb0e;
-    NODE_FUNCTION = 0xb0f;
-    NODE_OPERATOR = 0xb10;
-    NODE_PASS = 0xb11;
+    NODE_CALL = 0xb02;
+    NODE_IF = 0xb03;
+    NODE_GET = 0xb04;
+    NODE_WHILE = 0xb05;
+    NODE_STORE = 0xb06;
+    NODE_ARGVAR = 0xb07;
+    NODE_STRING = 0xb08;
+    NODE_NUMBER = 0xb09;
+    NODE_RETURN = 0xb0a;
+    NODE_OUTPUT = 0xb0b;
+    NODE_PROMPT = 0xb0c;
+    NODE_REMOVE = 0xb0d;
+    NODE_FUNCTION = 0xb0e;
+    NODE_OPERATOR = 0xb0f;
+    NODE_PASS = 0xb10;
 
-    ERROR_INTERPRETER = 0x01;
-    ERROR_CHARACTER = 0x02;
-    ERROR_SYNTAX = 0x03;
+    ERROR_INTERPRETER = 0x00;
+    ERROR_CHARACTER = 0x01;
+    ERROR_SYNTAX = 0x02;
 
     ASSIGNED_ERROR = [
         "Interpreter Error",
@@ -69,7 +70,7 @@ class LDRX extends HTMLElement {
     };
 
     MEMORY = [
-        { name: "LDRX", value: "LDRX (MIT) Antoine LANDRIEUX v1.0.0", arg: null, access: null },
+        { name: "LDRX", value: "1.0", arg: null, access: null },
         { name: "DATE", value: new Date().toDateString(), arg: null, access: null },
         { name: "TIME", value: Number(new Date()), arg: null, access: null }
     ];
@@ -83,7 +84,7 @@ class LDRX extends HTMLElement {
 
     connectedCallback() {
         window.onload = () => {
-            const code = this.innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');;
+            const code = this.innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
             this.clear();
             this.run(code);
         }
@@ -167,7 +168,6 @@ class LDRX extends HTMLElement {
         return new this.AbstractSyntaxTree(_Value, _Type, null, []);
     }
 
-    TYPEs = ["string", "integer", "float", "void", "any", "$"];
     KEYWORDs = ["fn", "return", "print", "while", "if", "else", "rem", "ask"];
     OPERATORs = ["<=", ">=", "==", "!=", "&&", "||", "**", "*", "/", "%", "^", "+", "-", "&", "|", "<", ">"];
 
@@ -207,8 +207,8 @@ class LDRX extends HTMLElement {
             else if (_RawCode[index] == ',')
                 ttype = this.TOKEN_COMMA;
 
-            else if (_RawCode[index] == "$")
-                ttype = this.TOKEN_TYPE;
+            else if (_RawCode[index] == ":")
+                ttype = this.TOKEN_ASSIGN;
 
             else if (/\{|\}/.test(_RawCode[index]))
                 ttype = this.TOKEN_KEYWORD;
@@ -226,7 +226,7 @@ class LDRX extends HTMLElement {
                 while (/[a-zA-Z0-9]|_/.test(_RawCode[index + adder]) && _RawCode[index + adder])
                     adder++;
                 const txt = _RawCode.slice(index, index + adder);
-                ttype = this.KEYWORDs.includes(txt) ? this.TOKEN_KEYWORD : (this.TYPEs.includes(txt) ? this.TOKEN_TYPE : this.TOKEN_NAME);
+                ttype = this.KEYWORDs.includes(txt) ? this.TOKEN_KEYWORD : this.TOKEN_NAME;
             }
 
             else if (/[0-9]/.test(_RawCode[index])) {
@@ -294,6 +294,8 @@ class LDRX extends HTMLElement {
             CurrentToken++;
 
             while (1) {
+                if (_Tokens[CurrentToken].type == instance_.TOKEN_CLOSE)
+                    break;
                 let argv = ParseMath();
                 if (!argv)
                     return null;
@@ -441,16 +443,13 @@ class LDRX extends HTMLElement {
                             let arg = this.AST("arg", this.NODE_ARGVAR);
 
                             while (true) {
-                                if (_Tokens[CurrentToken].type != this.TOKEN_TYPE)
-                                    return this.ThrowLang(this.ERROR_SYNTAX, _Tokens[CurrentToken].value, _Tokens[CurrentToken].char);
-
-                                let arg_type = this.AST(_Tokens[CurrentToken].value, this.NODE_TYPE);
-                                CurrentToken++;
+                                if (_Tokens[CurrentToken].type == this.TOKEN_CLOSE)
+                                    break;
 
                                 if (_Tokens[CurrentToken].type != this.TOKEN_NAME)
                                     return this.ThrowLang(this.ERROR_SYNTAX, _Tokens[CurrentToken].value, _Tokens[CurrentToken].char);
 
-                                arg.Push(this.AST(_Tokens[CurrentToken].value, this.NODE_STORE).Push(arg_type));
+                                arg.Push(this.AST(_Tokens[CurrentToken].value, this.NODE_STORE));
                                 CurrentToken++;
 
                                 if (_Tokens[CurrentToken].type != this.TOKEN_COMMA)
@@ -485,35 +484,31 @@ class LDRX extends HTMLElement {
                         default:
                             return this.ThrowLang(this.ERROR_INTERPRETER, keyword, _Tokens[CurrentToken--].char);
                     }
-
                     break;
 
-                case this.TOKEN_TYPE:
-                    const type = _Tokens[CurrentToken].value;
-                    CurrentToken++;
+                case this.TOKEN_NAME:
+                    let store = ParseFunction();
+                    if (store == null)
+                        return this.ThrowLang(this.ERROR_SYNTAX, _Tokens[CurrentToken].value, _Tokens[CurrentToken].char);
 
-                    if (_Tokens[CurrentToken].type != this.TOKEN_NAME)
-                        return this.ThrowLang(this.ERROR_SYNTAX, keyword, _Tokens[CurrentToken].char);
+                    if (store._Type != this.NODE_GET) {
+                        CurrentAST.Push(store);
+                        break;
+                    }
 
-                    const variable = this.AST(_Tokens[CurrentToken].value, this.NODE_STORE);
+                    store._Type = this.NODE_STORE;
+                    if (_Tokens[CurrentToken].type != this.TOKEN_ASSIGN)
+                        return this.ThrowLang(this.ERROR_SYNTAX, _Tokens[CurrentToken].value, _Tokens[CurrentToken].char);
+
                     CurrentToken++;
                     let oldtoken = CurrentToken;
-
-                    variable.Push(this.AST(type, this.NODE_TYPE));
                     let math = ParseMath();
 
                     if (!math)
                         CurrentToken = oldtoken;
 
-                    variable.Push(math);
-                    CurrentAST.Push(variable);
-                    break;
-
-                case this.TOKEN_NAME:
-                    let fn = ParseFunction();
-                    if (fn == null || fn?._Type == this.NODE_GET)
-                        return this.ThrowLang(this.ERROR_SYNTAX, keyword, _Tokens[CurrentToken].char);
-                    CurrentAST.Push(fn);
+                    store.Push(math);
+                    CurrentAST.Push(store);
                     break;
 
                 default:
@@ -565,27 +560,6 @@ class LDRX extends HTMLElement {
 
     /**
      * 
-     * @param {string} _Type 
-     * @param {any} _Value 
-     */
-    format(_Type, _Value) {
-        switch (_Type) {
-            case "integer":
-                return parseInt(_Value) || 0;
-            case "float":
-                return parseFloat(_Value) || 0;
-            case "string":
-                return _Value.toString();
-            case "$":
-            case "any":
-                return _Value;
-            default:
-                return this.SYMBOL_NULL;
-        }
-    }
-
-    /**
-     * 
      * @param {string} name 
      * @param {AbstractSyntaxTree} access 
      */
@@ -606,17 +580,17 @@ class LDRX extends HTMLElement {
         let get = this.#mem_get(name, access);
 
         if (get == null)
-            return null;
+            return this.SYMBOL_NOTDEF;
 
         const fn = this.MEMORY[get].value;
         let i = 0;
 
         this.MEMORY[get]?.arg?._Children?.forEach(argname => {
-            this.#mem_add(argname._Value, this.format(argname._Children[0]._Value, this.ParseAST(arg._Children[i]).value), null, fn);
+            this.#mem_add(argname._Value, this.ParseAST(arg._Children[i]).value, null, fn);
             i = i + 1;
         });
 
-        return this.Execute(fn);
+        return this.Execute(fn) || this.SYMBOL_NULL;
     }
 
     /**
@@ -658,10 +632,10 @@ class LDRX extends HTMLElement {
 
             switch (current._Type) {
                 case this.NODE_STORE:
-                    tmp = this.ParseAST(current._Children[1]);
+                    tmp = this.ParseAST(current._Children[0]);
                     this.#mem_add(
                         current._Value,
-                        this.format(current._Children[0]._Value, tmp.value),
+                        tmp.value,
                         tmp.arg,
                         current._Parent
                     );

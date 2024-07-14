@@ -20,7 +20,7 @@
             color: #bd0f0f;
         }
     </style>
-    <script src="../src/ldrx.js"></script>
+    <script src="ldrx.min.js"></script>
 </head>
 
 <body>
@@ -28,15 +28,17 @@
     <br />
     <ldrx-run style="font-family: monospace;">
 \ write Fibonacci series up to n
-fn fib(integer n, any end) {
+fn fib(n, end) {
     \ Print a Fibonacci series up to n.
-    integer a 0;
-    integer b 1;
-
-    while a < n {
+    a: 0;
+    b: 1;
+    next: 1;
+    
+    while a < 100 {
         print a + end;
-        integer a b;
-        integer b a + b;
+        a: b;
+        b: next;
+        next: a + b;
     }
     
     return a;

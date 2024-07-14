@@ -56,9 +56,9 @@ Some examples:
 ```html
 <ldrx-run>
 \ this is the first comment
-$spam 1; \ and this is the second comment
-        \ ... and now a third!
-$text "\ This is not a comment because it's inside quotes.";
+spam: 1; \ and this is the second comment
+         \ ... and now a third!
+text: "\ This is not a comment because it's inside quotes.";
 </ldrx-run>
 ```
 
@@ -87,36 +87,32 @@ A variable is defined by a name, a type, and a value.
 ```html
 </ldrx-run>
 \ text
-string text "Hello";
+text: "Hello";
 
 \ number (integer)
-integer number 1;
+number: 1;
 
 \ number (Floating-point number)
-float floating 1.58;
-
-\ any type
-any anytype1 "Hy";
-$   anytype2 8;
+float: 1.58;
 
 \ statement
-string message {
-    if number && floating {
-        return any;
+message: {
+    if number && float {
+        return text + "<br/>"; \\ <br/> => new line
     else
-        return text;
+        return "Ups!";
     }
 };
 
-fn add(float x, float y) {
+fn add(x, y) {
     return x + y;
 }
 
 \ function
-$ fn_ptr add;
+fn_ptr: add;
 
-print message; \ "Hy"
-print fn_ptr(number, floating); \ 2.58
+print message; \ "Hello"
+print fn_ptr(number, float); \ 2.58
 </ldrx-run>
 ```
 
@@ -127,22 +123,25 @@ We can create a function that writes the Fibonacci series to an arbitrary bounda
 ```html
 </ldrx-run>
 \ write Fibonacci series up to n
-fn fib(integer n) {
+fn fib(n, end) {
     \ Print a Fibonacci series up to n.
-    integer a 0;
-    integer b 1;
-
-    while a < n {
-        print a + " ";
-        integer a b;
-        integer b a + b;
+    a: 0;
+    b: 1;
+    next: 1;
+    
+    while a < 100 {
+        print a + end;
+        a: b;
+        b: next;
+        next: a + b;
     }
     
     return a;
 }
 
 \ Now call the function we just defined:
-print "The lasted value is " + fib(2000);
+print "The first value is ";
+print "The last value is " + fib(2000, "<br/>");
 </ldrx-run>
 ```
 
@@ -154,11 +153,19 @@ The delete operator deletes both the value of the property and the property itse
 
 ```html
 <ldrx-run>
-string message "Hello World!";
+message: "Hello World!";
+
+fn say_hello() {
+    return "Hello";
+}
 
 print message; \ "Hello World!"
 rem message;
-print message; \ "Undefined";
+print message; \ "Undefined"
+
+print say_hello(); \ "Hello World!"
+rem say_hello;
+print say_hello(); \ "Undefined"
 </ldrx-run>
 ```
 
@@ -172,13 +179,15 @@ The while loop executes as long as the condition (here: a < 10) remains true. In
 <ldrx-run>
 \ Fibonacci series:
 \ the sum of two elements defines the next
-integer a 0;
-integer b 1;
+a: 0;
+b: 1;
+next: 1;
 
-while a < 10 {
-    print a + "<br />";
-    integer a b;
-    integer b a + b;
+while a < 100 {
+    print a + " ";
+    a: b;
+    b: next;
+    next: a + b;
 }
 </ldrx-run>
 ```
@@ -194,17 +203,16 @@ Perhaps the most well-known statement type is the if statement. For example:
 <ldrx-run>
 print "Enter a number:";
 ask x;
-\ Convert string to int 
-integer x x;
+
+\ Convert string to number
+x: x*1;
 
 if x < 0 {
-    print "Negative changed to zero";
+    print "Negative";
 else x == 0
     print "Zero";
-else x == 1
-    print "Single";
 else
-    print "More";
+    print "Positive";
 }
 </ldrx-run>
 ```
