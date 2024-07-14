@@ -15,7 +15,7 @@ See [LDRX Documentation](doc/documentation.md)
 
 ### Add LDRX code into HTML page
 
-Download LDRX: [ldrx.min.js](https://raw.githubusercontent.com/AntoineLandrieux/LDRX/main/src/min/ldrx.min.js)
+Download LDRX: [ldrx.min.js](https://github.com/AntoineLandrieux/LDRX/releases/tag/Interpreter)
 
 ```html
 <!DOCTYPE html>

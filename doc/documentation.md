@@ -11,7 +11,7 @@
 ### 1.1 Install LDRX
 
 Add the LDRX interpreter to the HTML page with the file to download (`ldrx.min.js`):
-<https://raw.githubusercontent.com/AntoineLandrieux/LDRX/main/src/min/ldrx.min.js>
+<https://github.com/AntoineLandrieux/LDRX/releases/tag/Interpreter>
 
 ```html
 <!DOCTYPE html>
