@@ -85,7 +85,7 @@ A variable allows you to store a number, text, function, or a statement.
 A variable is defined by a name, a type, and a value.
 
 ```html
-</ldrx-run>
+<ldrx-run>
 \ text
 text: "Hello";
 
@@ -121,7 +121,7 @@ print fn_ptr(number, float); \ 2.58
 We can create a function that writes the Fibonacci series to an arbitrary boundary:
 
 ```html
-</ldrx-run>
+<ldrx-run>
 \ write Fibonacci series up to n
 fn fib(n, end) {
     \ Print a Fibonacci series up to n.
