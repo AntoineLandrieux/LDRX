@@ -13,7 +13,9 @@
  
 **/
 
-class LDRX extends HTMLElement {
+class LDRX {
+
+    #output_handle = undefined;
 
     VERSION = {MAJOR: 1, MINOR: 0, PATCH: 0};
 
@@ -75,21 +77,6 @@ class LDRX extends HTMLElement {
         { name: "TIME", value: Number(new Date()), arg: null, access: null }
     ];
 
-    /**
-     * LDRX (MIT) Antoine LANDRIEUX
-     */
-    constructor() {
-        super();
-    }
-
-    connectedCallback() {
-        window.onload = () => {
-            const code = this.innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-            this.clear();
-            this.run(code);
-        }
-    }
-
     AbstractSyntaxTree = class AbstractSyntaxTree {
         /**
          * 
@@ -135,15 +122,29 @@ class LDRX extends HTMLElement {
 
     /**
      * 
+     * @param {HTMLElement|null} _HTMLElement 
+     */
+    setOutputHandle(_HTMLElement) {
+        this.#output_handle = _HTMLElement;
+    }
+
+    /**
+     * 
      * @param {string} _String 
      */
     out(_String) {
-        this.innerHTML += _String;
+        if (this.#output_handle)
+            this.#output_handle.innerHTML += _String;
+        else
+            console.log(_String);
         return null;
     }
 
     clear() {
-        this.innerHTML = "";
+        if (this.#output_handle)
+            this.#output_handle.innerHTML = "";
+        else
+            console.clear();
         return null;
     }
 
@@ -704,10 +705,41 @@ class LDRX extends HTMLElement {
         return null;
     }
 
+    /**
+     * 
+     * @param {string} _RawCode 
+     */
     run(_RawCode) {
         this.Execute(this.Parse(this.Tokenizer(_RawCode)));
     }
 
 }
 
-customElements.define("ldrx-run", LDRX);
+
+class LDRXElement extends HTMLElement {
+
+    /**
+     * LDRX (MIT) Antoine LANDRIEUX
+     */
+    constructor() {
+        super();
+    }
+
+    connectedCallback() {
+        window.onload = () => {
+            const ldrx = new LDRX();
+            const code = 
+                this.innerHTML
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&amp;/g, '&');
+
+            ldrx.setOutputHandle(this);
+            ldrx.clear();
+            ldrx.run(code);
+        }
+    }
+
+}
+
+customElements.define("ldrx-run", LDRXElement);
