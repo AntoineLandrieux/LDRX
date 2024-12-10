@@ -17,7 +17,7 @@ class LDRX {
 
     #output_handle = undefined;
 
-    VERSION = {MAJOR: 1, MINOR: 0, PATCH: 0};
+    VERSION = { MAJOR: 1, MINOR: 0, PATCH: 1 };
 
     SYMBOL_NULL = "Null";
     SYMBOL_NOTDEF = "Undefined";
@@ -169,8 +169,8 @@ class LDRX {
         return new this.AbstractSyntaxTree(_Value, _Type, null, []);
     }
 
-    KEYWORDs = ["fn", "return", "print", "while", "if", "else", "rem", "ask"];
-    OPERATORs = ["<=", ">=", "==", "!=", "&&", "||", "**", "*", "/", "%", "^", "+", "-", "&", "|", "<", ">"];
+    KEYWORDS = ["fn", "return", "print", "while", "if", "else", "rem", "ask"];
+    OPERATORS = ["<=", ">=", "==", "!=", "&&", "||", "**", "*", "/", "%", "^", "+", "-", "&", "|", "<", ">"];
 
     /**
      * 
@@ -178,93 +178,94 @@ class LDRX {
      */
     Tokenizer(_RawCode) {
 
-        if (!_RawCode)
+        if (!_RawCode || typeof _RawCode != "string")
             return null;
 
+        const tokens = [];
+
         let index = 0;
-        let adder = 0;
-        let token = [];
         let ttype = this.TOKEN_EOF;
 
-        while (_RawCode[index]) {
+        while (index < _RawCode.length) {
 
-            adder = 1;
+            let adder = 1;
 
             if (/\s/.test(_RawCode[index])) {
                 index += adder;
                 continue;
             }
 
-            else if (_RawCode[index] == '\\') {
-                while (!/\n|\r/.test(_RawCode[index + adder]) && _RawCode[index + adder])
-                    adder++;
+            if (_RawCode[index] === '\\') {
+                while (!/\n|\r/.test(_RawCode[index + adder]) && _RawCode[index + adder]) adder++;
                 index += adder;
                 continue;
             }
 
-            if (_RawCode[index] == ";")
-                ttype = this.TOKEN_SEMICOLON;
-
-            else if (_RawCode[index] == ',')
-                ttype = this.TOKEN_COMMA;
-
-            else if (_RawCode[index] == ":")
-                ttype = this.TOKEN_ASSIGN;
-
-            else if (/\{|\}/.test(_RawCode[index]))
-                ttype = this.TOKEN_KEYWORD;
-
-            else if (/\(|\)/.test(_RawCode[index]))
-                ttype = (_RawCode[index] == '(') ? this.TOKEN_OPEN : this.TOKEN_CLOSE;
-
-            else if (this.OPERATORs.includes(_RawCode[index]) || this.OPERATORs.includes(_RawCode.slice(index, index + adder + 1))) {
-                if (this.OPERATORs.includes(_RawCode.slice(index, index + adder + 1)))
-                    adder++;
-                ttype = this.TOKEN_OPERATOR;
+            switch (_RawCode[index]) {
+                case ';':
+                    ttype = this.TOKEN_SEMICOLON;
+                    break;
+                case ',':
+                    ttype = this.TOKEN_COMMA;
+                    break;
+                case ':':
+                    ttype = this.TOKEN_ASSIGN;
+                    break;
+                case '{':
+                case '}':
+                    ttype = this.TOKEN_KEYWORD;
+                    break;
+                case '(':
+                    ttype = this.TOKEN_OPEN;
+                    break;
+                case ')':
+                    ttype = this.TOKEN_CLOSE;
+                    break;
+                default:
+                    if (this.OPERATORS.includes(_RawCode[index]) || this.OPERATORS.includes(_RawCode.slice(index, index + 2))) {
+                        if (this.OPERATORS.includes(_RawCode.slice(index, index + 2)))
+                            adder++;
+                        ttype = this.TOKEN_OPERATOR;
+                    }
+                    else if (/[a-zA-Z_]/.test(_RawCode[index])) {
+                        while (/[a-zA-Z0-9_]/.test(_RawCode[index + adder]) && _RawCode[index + adder])
+                            adder++;
+                        const txt = _RawCode.slice(index, index + adder);
+                        ttype = this.KEYWORDS.includes(txt) ? this.TOKEN_KEYWORD : this.TOKEN_NAME;
+                    }
+                    else if (/[0-9]/.test(_RawCode[index])) {
+                        while (!isNaN(_RawCode.slice(index, index + adder + 1)) && !/\s/.test(_RawCode[index + adder]) && _RawCode[index + adder])
+                            adder++;
+                        ttype = this.TOKEN_NUMBER;
+                    }
+                    else if (/["'`]/.test(_RawCode[index])) {
+                        const quote = _RawCode[index];
+                        index++;
+                        while (_RawCode[index + adder] !== quote && _RawCode[index + adder])
+                            adder++;
+                        ttype = this.TOKEN_STRING;
+                    }
+                    else {
+                        return throwLang(this.ERROR_CHARACTER, _RawCode[index], index);
+                    }
             }
 
-            else if (/[a-zA-Z]|_/.test(_RawCode[index])) {
-                while (/[a-zA-Z0-9]|_/.test(_RawCode[index + adder]) && _RawCode[index + adder])
-                    adder++;
-                const txt = _RawCode.slice(index, index + adder);
-                ttype = this.KEYWORDs.includes(txt) ? this.TOKEN_KEYWORD : this.TOKEN_NAME;
-            }
-
-            else if (/[0-9]/.test(_RawCode[index])) {
-                while (!isNaN(_RawCode.slice(index, index + adder + 1)) && !/\s/.test(_RawCode[index + adder]) && _RawCode[index + adder])
-                    adder++;
-                ttype = this.TOKEN_NUMBER;
-            }
-
-            else if (/\"|\'|\`/.test(_RawCode[index])) {
-                const quote = _RawCode[index];
-                index++;
-                while (_RawCode[index + adder] != quote && _RawCode[index + adder])
-                    adder++;
-                ttype = this.TOKEN_STRING;
-            }
-
-            else
-                return this.ThrowLang(this.ERROR_CHARACTER, _RawCode[index], index);
-
-            token.push({
+            tokens.push({
                 value: _RawCode.slice(index, index + adder),
                 type: ttype,
                 char: index
             });
 
-            index += adder + (ttype == this.TOKEN_STRING);
-
+            index += adder + (ttype === this.TOKEN_STRING);
         }
 
-        token.push({
+        tokens.push({
             value: null,
             type: this.TOKEN_EOF,
             char: _RawCode.length + 1
         });
 
-        return token;
-
+        return tokens;
     }
 
     /**
@@ -728,7 +729,7 @@ class LDRXElement extends HTMLElement {
     connectedCallback() {
         window.onload = () => {
             const ldrx = new LDRX();
-            const code = 
+            const code =
                 this.innerHTML
                     .replace(/&lt;/g, '<')
                     .replace(/&gt;/g, '>')
